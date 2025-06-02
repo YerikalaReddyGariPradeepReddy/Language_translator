@@ -20,11 +20,17 @@ export default function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/">
-            <div className="flex items-center space-x-2 cursor-pointer">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-                <Globe className="w-4 h-4 text-white" />
+            <div className="flex items-center space-x-3 cursor-pointer">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/25">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-white">
+                  <path d="M12 2L13.09 8.26L19 7L14.74 12L19 17L13.09 15.74L12 22L10.91 15.74L5 17L9.26 12L5 7L10.91 8.26L12 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+                  <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.5"/>
+                </svg>
               </div>
-              <h1 className="text-xl font-heading font-semibold">Verto</h1>
+              <div className="flex flex-col">
+                <h1 className="text-xl font-heading font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Verto</h1>
+                <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Translate</span>
+              </div>
             </div>
           </Link>
 
