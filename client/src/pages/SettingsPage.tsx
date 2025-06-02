@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Settings, 
@@ -36,7 +36,7 @@ import type { DownloadedLanguage } from "@shared/schema";
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const { autoTranslate, setAutoTranslate } = useTranslation();
-  
+
   // Local settings state
   const [settings, setSettings] = useState({
     speechRate: [1.0],
@@ -444,7 +444,7 @@ function OfflineLanguageSelector() {
   });
 
   const downloadedCodes = new Set(downloadedLanguages.map(lang => lang.languageCode));
-  
+
   const filteredLanguages = languages.filter(lang => 
     lang.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     lang.code.toLowerCase().includes(searchQuery.toLowerCase())
@@ -515,7 +515,7 @@ function OfflineLanguageSelector() {
               const isDownloaded = downloadedCodes.has(language.code);
               const isSelected = selectedLanguages.has(language.code);
               const isProcessing = downloadLanguageMutation.isPending || removeLanguageMutation.isPending;
-              
+
               return (
                 <div 
                   key={language.code} 
@@ -542,7 +542,7 @@ function OfflineLanguageSelector() {
                       <p className="text-xs text-gray-500 uppercase">{language.code}</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center space-x-2">
                     {isDownloaded && (
                       <Badge variant="outline" className="text-green-600 border-green-200">
@@ -550,7 +550,7 @@ function OfflineLanguageSelector() {
                         Downloaded
                       </Badge>
                     )}
-                    
+
                     <Button
                       size="sm"
                       variant={isDownloaded ? "destructive" : "default"}

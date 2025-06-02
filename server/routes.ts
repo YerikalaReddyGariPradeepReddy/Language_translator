@@ -13,7 +13,7 @@ async function translateText(text: string, from: string, to: string) {
     }
 
     const url = `https://translation.googleapis.com/language/translate/v2?key=${process.env.GOOGLE_TRANSLATE_API_KEY}`;
-    
+
     const response = await fetch(url, {
       method: 'POST',
       headers: {
@@ -33,7 +33,7 @@ async function translateText(text: string, from: string, to: string) {
 
     const data = await response.json();
     const translatedText = data.data.translations[0].translatedText;
-    
+
     return {
       translatedText,
       sourceLanguage: from,
@@ -55,7 +55,7 @@ async function detectLanguage(text: string) {
     }
 
     const url = `https://translation.googleapis.com/language/translate/v2/detect?key=${process.env.GOOGLE_TRANSLATE_API_KEY}`;
-    
+
     const response = await fetch(url, {
       method: 'POST',
       headers: {
@@ -72,7 +72,7 @@ async function detectLanguage(text: string) {
 
     const data = await response.json();
     const detection = data.data.detections[0][0];
-    
+
     return {
       language: detection.language,
       confidence: Math.round(detection.confidence * 100)
@@ -94,7 +94,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }).parse(req.body);
 
       const result = await translateText(text, from, to);
-      
+
       // Save translation to storage
       const translation = await storage.createTranslation({
         sourceText: text,
