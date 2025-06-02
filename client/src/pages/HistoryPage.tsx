@@ -18,17 +18,11 @@ export default function HistoryPage() {
 
   const { data: translations = [], isLoading } = useQuery<Translation[]>({
     queryKey: ["/api/translations/history", currentPage],
-    queryFn: async () => {
-      const response = await apiRequest(`/api/translations/history?page=${currentPage}&limit=20`);
-      return response.json();
-    },
   });
 
   const deleteTranslationMutation = useMutation({
     mutationFn: async (id: number) => {
-      await apiRequest(`/api/translations/${id}`, {
-        method: "DELETE",
-      });
+      await apiRequest("DELETE", `/api/translations/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/translations/history"] });
@@ -37,18 +31,12 @@ export default function HistoryPage() {
 
   const saveTranslationMutation = useMutation({
     mutationFn: async (translation: Translation) => {
-      await apiRequest("/api/translations/save", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          sourceLanguage: translation.sourceLanguage,
-          targetLanguage: translation.targetLanguage,
-          phrase: translation.sourceText,
-          translation: translation.translatedText,
-          category: "general",
-        }),
+      await apiRequest("POST", "/api/translations/save", {
+        sourceLanguage: translation.sourceLanguage,
+        targetLanguage: translation.targetLanguage,
+        phrase: translation.sourceText,
+        translation: translation.translatedText,
+        category: "general",
       });
     },
     onSuccess: () => {
