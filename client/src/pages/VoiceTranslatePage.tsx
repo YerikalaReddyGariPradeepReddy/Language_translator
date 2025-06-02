@@ -20,7 +20,7 @@ export default function VoiceTranslatePage() {
     sourceText,
     translatedText 
   } = useTranslation();
-  
+
   const { 
     transcript, 
     isListening: voiceIsListening, 
@@ -33,7 +33,7 @@ export default function VoiceTranslatePage() {
     continuous: true,
     interimResults: true,
   });
-  
+
   const { speak, isSpeaking } = useTextToSpeech();
   const translateMutation = useTranslateText();
 
@@ -162,7 +162,7 @@ export default function VoiceTranslatePage() {
                 <span className="text-sm font-medium">Recording... Speak clearly in {sourceInfo.name}</span>
               </div>
             )}
-            
+
             {translateMutation.isPending && (
               <div className="flex items-center justify-center space-x-2 text-blue-500">
                 <RefreshCw className="w-4 h-4 animate-spin" />
