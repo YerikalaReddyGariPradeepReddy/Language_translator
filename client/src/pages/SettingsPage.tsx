@@ -37,6 +37,8 @@ export default function SettingsPage() {
     autoPlay: true,
     notifications: true,
     offlineMode: false,
+    autoOfflineMode: false,
+    offlineFirstMode: false,
     autoSave: true,
     maxHistory: 100,
     language: "en",
@@ -61,6 +63,8 @@ export default function SettingsPage() {
       autoPlay: true,
       notifications: true,
       offlineMode: false,
+      autoOfflineMode: false,
+      offlineFirstMode: false,
       autoSave: true,
       maxHistory: 100,
       language: "en",
@@ -234,6 +238,77 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
+      {/* Offline Mode Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <Database className="w-5 h-5" />
+            <span>Offline Mode</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <Label className="text-base">Enable offline mode</Label>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Use downloaded language packs when available
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={settings.offlineMode}
+                onCheckedChange={(checked) => handleSettingChange('offlineMode', checked)}
+              />
+              <Badge variant="secondary" className="text-xs">
+                Beta
+              </Badge>
+            </div>
+          </div>
+
+          <Separator />
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <Label className="text-base">Auto-detect offline mode</Label>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Automatically switch to offline when connection is lost
+                </p>
+              </div>
+              <Switch
+                checked={settings.autoOfflineMode || false}
+                onCheckedChange={(checked) => handleSettingChange('autoOfflineMode', checked)}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <Label className="text-base">Offline-first mode</Label>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Prefer offline translation even when online
+                </p>
+              </div>
+              <Switch
+                checked={settings.offlineFirstMode || false}
+                onCheckedChange={(checked) => handleSettingChange('offlineFirstMode', checked)}
+              />
+            </div>
+          </div>
+
+          <Separator />
+
+          <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <h4 className="font-medium text-blue-800 dark:text-blue-200 mb-2">Offline Benefits</h4>
+            <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
+              <li>• Works without internet connection</li>
+              <li>• Faster translation processing</li>
+              <li>• Enhanced privacy protection</li>
+              <li>• Reduced data usage</li>
+            </ul>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Privacy & Data Settings */}
       <Card>
         <CardHeader>
@@ -254,24 +329,6 @@ export default function SettingsPage() {
               checked={settings.autoSave}
               onCheckedChange={(checked) => handleSettingChange('autoSave', checked)}
             />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <Label className="text-base">Offline mode</Label>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Use downloaded language packs when available
-              </p>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Switch
-                checked={settings.offlineMode}
-                onCheckedChange={(checked) => handleSettingChange('offlineMode', checked)}
-              />
-              <Badge variant="secondary" className="text-xs">
-                Beta
-              </Badge>
-            </div>
           </div>
 
           <Separator />
