@@ -4,7 +4,12 @@ import { setupVite, serveStatic, log } from "./vite";
 
 // Load environment variables for local development
 if (process.env.NODE_ENV === "development") {
-  require('dotenv').config();
+  try {
+    const dotenv = await import('dotenv');
+    dotenv.config();
+  } catch (error) {
+    console.log('dotenv not available, continuing without it');
+  }
 }
 
 const app = express();
