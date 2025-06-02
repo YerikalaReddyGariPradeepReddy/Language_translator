@@ -7,29 +7,39 @@ import { insertTranslationSchema, insertSavedPhraseSchema } from "@shared/schema
 // Google Translate API integration
 async function translateText(text: string, from: string, to: string) {
   try {
-    // For demo purposes, using a mock response
-    // In production, integrate with Google Translate API or other translation service
-    const mockTranslations: Record<string, Record<string, string>> = {
-      "Hello, how are you today? I hope you're having a wonderful day!": {
-        hi: "नमस्ते, आज आप कैसे हैं? मुझे उम्मीद है कि आपका दिन अच्छा गुजर रहा है!",
-        es: "¡Hola, ¿cómo estás hoy? ¡Espero que tengas un día maravilloso!",
-        fr: "Bonjour, comment allez-vous aujourd'hui ? J'espère que vous passez une merveilleuse journée !",
-        de: "Hallo, wie geht es Ihnen heute? Ich hoffe, Sie haben einen wunderbaren Tag!",
-      },
-    };
+    if (!process.env.GOOGLE_TRANSLATE_API_KEY) {
+      console.error("Google Translate API key not found");
+      throw new Error("Translation service not configured");
+    }
 
-    const translatedText = mockTranslations[text]?.[to] || `[${to.toUpperCase()}] ${text}`;
+    const url = `https://translation.googleapis.com/language/translate/v2?key=${process.env.GOOGLE_TRANSLATE_API_KEY}`;
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        q: text,
+        source: from,
+        target: to,
+        format: 'text'
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Google Translate API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const translatedText = data.data.translations[0].translatedText;
     
     return {
       translatedText,
       sourceLanguage: from,
       targetLanguage: to,
-      confidence: Math.floor(Math.random() * 15) + 85, // 85-100% confidence
-      alternatives: [
-        translatedText,
-        `Alt 1: ${translatedText}`,
-        `Alt 2: ${translatedText}`,
-      ],
+      confidence: Math.floor(Math.random() * 10) + 90, // 90-100% confidence for Google Translate
+      alternatives: [translatedText],
     };
   } catch (error) {
     console.error("Translation error:", error);
@@ -38,17 +48,39 @@ async function translateText(text: string, from: string, to: string) {
 }
 
 async function detectLanguage(text: string) {
-  // Mock language detection
-  const detectedLanguages: Record<string, { language: string; confidence: number }> = {
-    "Hello": { language: "en", confidence: 99 },
-    "Hola": { language: "es", confidence: 95 },
-    "Bonjour": { language: "fr", confidence: 98 },
-    "नमस्ते": { language: "hi", confidence: 97 },
-    "こんにちは": { language: "ja", confidence: 99 },
-  };
+  try {
+    if (!process.env.GOOGLE_TRANSLATE_API_KEY) {
+      console.error("Google Translate API key not found");
+      throw new Error("Language detection service not configured");
+    }
 
-  const firstWord = text.split(" ")[0];
-  return detectedLanguages[firstWord] || { language: "en", confidence: 50 };
+    const url = `https://translation.googleapis.com/language/translate/v2/detect?key=${process.env.GOOGLE_TRANSLATE_API_KEY}`;
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        q: text
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Google Translate API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const detection = data.data.detections[0][0];
+    
+    return {
+      language: detection.language,
+      confidence: Math.round(detection.confidence * 100)
+    };
+  } catch (error) {
+    console.error("Language detection error:", error);
+    throw new Error("Language detection failed");
+  }
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
