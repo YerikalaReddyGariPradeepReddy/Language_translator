@@ -12,6 +12,8 @@ export default function Header() {
     { name: "Voice", href: "/voice" },
     { name: "Conversation", href: "/conversation" },
     { name: "History", href: "/history" },
+    { name: "Settings", href: "/settings" },
+    { name: "Account", href: "/account" },
   ];
 
   return (

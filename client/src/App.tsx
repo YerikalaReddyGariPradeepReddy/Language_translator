@@ -15,6 +15,7 @@ import HistoryPage from "@/pages/HistoryPage";
 import SavedPage from "@/pages/SavedPage";
 import DownloadsPage from "@/pages/DownloadsPage";
 import SettingsPage from "@/pages/SettingsPage";
+import AccountPage from "@/pages/AccountPage";
 
 function Router() {
   return (
@@ -28,6 +29,7 @@ function Router() {
         <Route path="/saved" component={SavedPage} />
         <Route path="/downloads" component={DownloadsPage} />
         <Route path="/settings" component={SettingsPage} />
+        <Route path="/account" component={AccountPage} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
