@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Settings, 
   Volume2, 
@@ -19,11 +21,17 @@ import {
   Bell,
   Shield,
   Database,
-  RefreshCw
+  RefreshCw,
+  Download,
+  Check,
+  Search
 } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useTranslation } from "@/contexts/TranslationContext";
-import { getLanguageInfo } from "@/lib/languages";
+import { getLanguageInfo, languages } from "@/lib/languages";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import type { DownloadedLanguage } from "@shared/schema";
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
@@ -306,6 +314,30 @@ export default function SettingsPage() {
               <li>• Reduced data usage</li>
             </ul>
           </div>
+
+          <Separator />
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <Label className="text-base">Download Languages</Label>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Select languages to download for offline use
+                </p>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => window.location.href = '/downloads'}
+                className="flex items-center space-x-2"
+              >
+                <Database className="w-4 h-4" />
+                <span>Manage Downloads</span>
+              </Button>
+            </div>
+
+            <OfflineLanguageSelector />
+          </div>
         </CardContent>
       </Card>
 
@@ -376,6 +408,171 @@ export default function SettingsPage() {
           </div>
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+function OfflineLanguageSelector() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedLanguages, setSelectedLanguages] = useState<Set<string>>(new Set());
+  const queryClient = useQueryClient();
+
+  const { data: downloadedLanguages = [], isLoading } = useQuery<DownloadedLanguage[]>({
+    queryKey: ["/api/languages/downloaded"],
+  });
+
+  const downloadLanguageMutation = useMutation({
+    mutationFn: async ({ languageCode, languageName }: { languageCode: string; languageName: string }) => {
+      const response = await apiRequest("POST", "/api/languages/download", {
+        languageCode,
+        languageName,
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/languages/downloaded"] });
+    },
+  });
+
+  const removeLanguageMutation = useMutation({
+    mutationFn: async (languageCode: string) => {
+      await apiRequest("DELETE", `/api/languages/downloaded/${languageCode}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/languages/downloaded"] });
+    },
+  });
+
+  const downloadedCodes = new Set(downloadedLanguages.map(lang => lang.languageCode));
+  
+  const filteredLanguages = languages.filter(lang => 
+    lang.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    lang.code.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleLanguageToggle = (languageCode: string, languageName: string, isDownloaded: boolean) => {
+    if (isDownloaded) {
+      removeLanguageMutation.mutate(languageCode);
+    } else {
+      downloadLanguageMutation.mutate({ languageCode, languageName });
+    }
+  };
+
+  const handleBulkDownload = () => {
+    selectedLanguages.forEach(languageCode => {
+      const language = languages.find(lang => lang.code === languageCode);
+      if (language && !downloadedCodes.has(languageCode)) {
+        downloadLanguageMutation.mutate({ 
+          languageCode: language.code, 
+          languageName: language.name 
+        });
+      }
+    });
+    setSelectedLanguages(new Set());
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-3">
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="h-12 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Search and Bulk Actions */}
+      <div className="flex space-x-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <Input
+            type="text"
+            placeholder="Search languages..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        {selectedLanguages.size > 0 && (
+          <Button 
+            onClick={handleBulkDownload}
+            disabled={downloadLanguageMutation.isPending}
+            className="flex items-center space-x-2"
+          >
+            <Download className="w-4 h-4" />
+            <span>Download ({selectedLanguages.size})</span>
+          </Button>
+        )}
+      </div>
+
+      {/* Language List */}
+      <div className="border rounded-lg">
+        <ScrollArea className="h-64">
+          <div className="p-2 space-y-1">
+            {filteredLanguages.map((language) => {
+              const isDownloaded = downloadedCodes.has(language.code);
+              const isSelected = selectedLanguages.has(language.code);
+              const isProcessing = downloadLanguageMutation.isPending || removeLanguageMutation.isPending;
+              
+              return (
+                <div 
+                  key={language.code} 
+                  className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                >
+                  <div className="flex items-center space-x-3">
+                    {!isDownloaded && (
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={(checked) => {
+                          const newSelected = new Set(selectedLanguages);
+                          if (checked) {
+                            newSelected.add(language.code);
+                          } else {
+                            newSelected.delete(language.code);
+                          }
+                          setSelectedLanguages(newSelected);
+                        }}
+                      />
+                    )}
+                    <span className="text-xl">{language.flag}</span>
+                    <div>
+                      <p className="font-medium">{language.name}</p>
+                      <p className="text-xs text-gray-500 uppercase">{language.code}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    {isDownloaded && (
+                      <Badge variant="outline" className="text-green-600 border-green-200">
+                        <Check className="w-3 h-3 mr-1" />
+                        Downloaded
+                      </Badge>
+                    )}
+                    
+                    <Button
+                      size="sm"
+                      variant={isDownloaded ? "destructive" : "default"}
+                      onClick={() => handleLanguageToggle(language.code, language.name, isDownloaded)}
+                      disabled={isProcessing}
+                      className="min-w-[80px]"
+                    >
+                      {isDownloaded ? "Remove" : "Download"}
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </ScrollArea>
+      </div>
+
+      {/* Stats */}
+      <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+        <span>{downloadedLanguages.length} languages downloaded</span>
+        <span>{languages.length - downloadedLanguages.length} available to download</span>
+      </div>
     </div>
   );
 }
